@@ -6,12 +6,48 @@ import{useState} from "react"
 import apiClient from '../communication/apiClient'
 import CardLogIn from '../components/CardLogIn'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import UserTable from '../components/UserTable';
+import UserRegister from '../components/UserRegister';
+
+import 'slick-carousel/slick/slick.css'; 
+import 'slick-carousel/slick/slick-theme.css';
+import ImageCarouselCard from '../components/ImageCarouselCard'; // Import the ImageCarouselCard component
+
+import LiveCurveCard from '../components/LiveCurveCard'; // Import the LiveCurveCard component
+
+
+
+const sampleUser = [
+  {
+    id: "678dcfacb91e637d2ce2f4ab",
+    name: "test",
+    email: "test@gmail.com",
+    department: "legal",
+    orgId: 1,
+    secret: "ituJDEoIPGKh",
+    status: "active",
+  },
+  {
+    id: "678dcfacb91e637d2ce2f4ac",
+    name: "example",
+    email: "example@gmail.com",
+    department: "marketing",
+    orgId: 2,
+    // secret: "xyz123secret",
+    status: "inactive",
+  },
+  // Add more users as needed
+];
+
+
 
 const ToDo = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('drsudip.robotics@gmail.com');
   const [password, setPassword] = useState('Sudip@123');
   const [token, setToken] = useState('');
+  
+  const [users, setUsers] = useState([]);
 
   ////////////////////////////////////////////////
     const handleLogin = async () => {
@@ -59,6 +95,172 @@ const ToDo = () => {
   }
 };
 //////////////////////////////////////////////
+const handleSignUp = async () => {
+  try {
+    // Create the Axios client
+    const Client = axios.create({
+      baseURL: 'http://192.168.31.196:3000/v1/',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Prepare the JSON payload for registration
+    const payload = {
+      email: "user43@gmail.com",
+      name: "pavan",
+      password: "Admin@123",
+      department: "legal",
+      orgId: 1,
+    };
+
+    // Send a POST request to the /auth/register endpoint
+    const response = await Client.post('/auth/register', payload, {
+      headers: {
+        'Authorization': 'Bearer your-token-here',
+      },
+    });
+
+    // Handle the response
+    alert(response.data.message);
+  } catch (error) {
+    console.error("Error:", error);
+    if (error.response) {
+      // Handle server response errors
+      alert(`Error: ${error.response.data.message}`);
+    } else {
+      // Handle network errors or API not running
+      alert("API not Running or Network Error");
+    }
+  }
+};
+//////////////////////////////////////////////
+const handleGetAllUser = async () => {
+  try {
+    // Replace with a valid token
+    const token2 = localStorage.getItem('authToken'); // Replace with sessionStorage or a variable if needed
+
+
+    // Create the Axios client
+    const Client = axios.create({
+      baseURL: 'http://192.168.31.196:3000/v1/',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token2}`,
+      },
+    });
+
+    // Send a GET request to the /users endpoint
+    const response = await Client.get('/users?size=30&page=0');
+
+  //  console.log(sampleUser);
+
+   // alert(response.payload);
+    
+    // Handle the response
+    console.log(response.data.payload.docs); // Log the response data
+
+    // const result= extractIdsAndStatuses(response);
+
+    // console.log("Extracted Array:", result);
+
+    ////////////////////////////////
+    setUsers(response.data.payload.docs);
+
+
+
+
+
+
+
+
+
+    ////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   // alert("Users fetched successfully!");
+  } catch (error) {
+    console.error("Error:", error);
+    if (error.response) {
+      // Handle server response errors
+      alert(`Error: ${error.response.data.message}`);
+    } else {
+      // Handle network errors or API not running
+      alert("API not Running or Network Error");
+    }
+  }
+};
+/////////////////////////////////////////////////
+const extractIdsAndStatuses = (response) => {
+  if (response.success && response.payload.docs) {
+    const resultArray = response.payload.docs.map((doc) => {
+      return { id: doc.id, status: doc.status };
+    });
+    return resultArray;
+  } else {
+    console.error("Invalid response or no documents found.");
+    return [];
+  }
+};
+/////////////////////////////////////////////////////
+const handleSetActive = async () => {
+  try {
+    // Retrieve the token from localStorage
+    const token2 = localStorage.getItem('authToken'); // Replace with sessionStorage or a variable if needed
+
+    // Create the Axios client
+    const Client = axios.create({
+      baseURL: 'http://192.168.31.196:3000/v1/',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token2}`,
+      },
+    });
+
+    // Specify the user ID and payload
+    const userId = "678dcfacb91e637d2ce2f4ab"; // Replace with the desired user ID
+    const payload = { status: "active" };
+
+    // Send a PATCH request to update the user's status
+    const response = await Client.put(`/users/${userId}`, payload);
+
+    // Handle the response
+    console.log("Response Data:", response.data);
+
+
+
+   alert(`${response.data.message}`);
+  } catch (error) {
+    console.error("Error:", error);
+    if (error.response) {
+      // Handle server response errors
+      alert(`Error: ${error.response.data.message}`);
+    } else {
+      // Handle network errors or API not running
+      alert("API not Running or Network Error");
+    }
+  }
+};
+
+/////////////////////////////////////////////////
+
+
+
+
 const btn_user_login = async () => {
   try {
     const Client = axios.create({
@@ -91,7 +293,7 @@ const btn_admin_login = async () => {
       baseURL: 'http://192.168.31.196:3000/v1/'
     });
     ////////////////
-    setEmail("admin50@gmail.com");
+    setEmail("testAdmin@gmail.com");// setEmail("admin60@gmail.com");
     setPassword("Admin@123");
       const requestParams  = {email , password };
    
@@ -229,9 +431,31 @@ const btn_get_history = async () => {
   return (
 
     <div>
+      
     <h1>ToDo</h1>
+    <div>
+    <h3>User Registration</h3>
+    <UserRegister></UserRegister>
+    <UserTable data={users} />   
+
+      <h1>Dashboard</h1>
+      <UserTable data={users} />     
+    </div>
 
     <button onClick={testAPI_handler}>Test API Server Runnig</button> 
+    <br></br>  <br></br>
+
+    {/*===============Register a user================*/}
+    <label>User ID</label> <input id="userId" />
+    <label>Password</label> <input id="passWord" />
+    <button onClick={handleSignUp}>Sign Up</button>
+    {/* =========================================== */}
+    <br></br>  <br></br>
+
+    <button onClick={handleGetAllUser}>Get All User</button>
+    <br></br>  <br></br>
+
+    <button onClick={handleSetActive}>Set User Active</button>
     <br></br>  <br></br>
 
     <button onClick={btn_user_login}>User LogIn</button> 
@@ -273,6 +497,10 @@ const btn_get_history = async () => {
       onChange={(e) => setPassword(e.target.value)}
     />
     <button onClick={handleLogin}>Login</button>
+ 
+    <LiveCurveCard />
+    <ImageCarouselCard />
+ 
   </div>
 
 
@@ -299,9 +527,22 @@ const btn_get_history = async () => {
     //   </div>
    
     // </div>
+
+
+        
+
+
+
+
+
+
+
+
+
+
   )
   ///////////< End of LogIn Interface>///////////////////////////
-
+  
 
 
 
